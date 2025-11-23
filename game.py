@@ -44,8 +44,7 @@ class Bird:
         pygame.draw.polygon(screen, (255, 165, 0), beak_points)
         
     def get_rect(self):
-        return pygame.Rect(self.x - self.radius, self.y - self.radius, 
-                          self.radius * 2, self.radius * 2)
+        return pygame.Rect(self.x - self.radius, self.y - self.radius, self.radius * 2, self.radius * 2)
 
 class Pipe:
     def __init__(self, x):
@@ -75,8 +74,7 @@ class Pipe:
     def collides_with_bird(self, bird):
         bird_rect = bird.get_rect()
         top_pipe_rect = pygame.Rect(self.x, 0, PIPE_WIDTH, self.gap_y)
-        bottom_pipe_rect = pygame.Rect(self.x, self.gap_y + PIPE_GAP, PIPE_WIDTH, 
-                                     SCREEN_HEIGHT - (self.gap_y + PIPE_GAP))
+        bottom_pipe_rect = pygame.Rect(self.x, self.gap_y + PIPE_GAP, PIPE_WIDTH, SCREEN_HEIGHT - (self.gap_y + PIPE_GAP))
         
         return bird_rect.colliderect(top_pipe_rect) or bird_rect.colliderect(bottom_pipe_rect)
     

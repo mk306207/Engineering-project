@@ -12,6 +12,7 @@ BLACK = (0, 0, 0)
 GRAY = (100, 100, 100)
 LIGHT_GRAY = (200, 200, 200)
 DARK_GRAY = (60, 60, 60)
+BLUE = (50, 120, 200)
 
 MAZE = [
     [1,0,1,1,1,1,1,1,1,1,1,1,1,1,1],
@@ -30,6 +31,32 @@ MAZE = [
     [1,0,0,0,0,0,0,0,0,0,1,0,1,0,1],
     [1,1,1,1,1,1,1,1,1,1,1,1,1,0,1],
 ]
+
+START_POSITION = (1,0)
+FINISH_LINE = (13,14)
+
+class Player:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.radius = TILE_SIZE // 3
+        
+    def move(self, dx, dy, maze):
+        new_x = self.x + dx
+        new_y = self.y + dy
+        if not maze.is_wall(new_x, new_y):
+            self.x = new_x
+            self.y = new_y
+            return True
+        return False
+    
+    def draw(self, screen):
+        center_x = self.x * TILE_SIZE + TILE_SIZE // 2
+        center_y = self.y * TILE_SIZE + TILE_SIZE // 2
+        pygame.draw.circle(screen, BLUE, (center_x, center_y), self.radius)
+
+    def get_position(self):
+        return(self.x,self.y)
 
 class Maze:
     def __init__(self):
@@ -60,6 +87,7 @@ class Game:
         self.clock = pygame.time.Clock()
         self.maze = Maze()
         self.running = True
+        self.player = Player(START_POSITION[0],START_POSITION[1])
         
     def handle_events(self):
         for event in pygame.event.get():
@@ -68,13 +96,24 @@ class Game:
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     self.running = False
+                elif event.key == pygame.K_UP or event.key == pygame.K_w:
+                    self.player.move(0, -1, self.maze)
+                elif event.key == pygame.K_DOWN or event.key == pygame.K_s:
+                    self.player.move(0, 1, self.maze)
+                elif event.key == pygame.K_LEFT or event.key == pygame.K_a:
+                    self.player.move(-1, 0, self.maze)
+                elif event.key == pygame.K_RIGHT or event.key == pygame.K_d:
+                    self.player.move(1, 0, self.maze)
     
     def update(self):
-        pass
+        print(self.player.get_position())
+        if self.player.get_position() == FINISH_LINE:
+            self.running = False
     
     def draw(self):
         self.screen.fill(WHITE)
         self.maze.draw(self.screen)
+        self.player.draw(self.screen)
         pygame.display.flip()
     
     def run(self):
