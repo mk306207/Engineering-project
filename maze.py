@@ -87,7 +87,12 @@ class Game:
         self.font = pygame.font.Font(None, 48)
         self.small_font = pygame.font.Font(None, 32)
         self.game_over = False
-        
+
+    def restart(self):
+        self.player = Player(START_POSITION[0],START_POSITION[1])
+        self.score = 0
+        self.game_over = False
+
     def handle_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -95,29 +100,36 @@ class Game:
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     self.running = False
-                elif event.key == pygame.K_UP or event.key == pygame.K_w:
+                elif event.key == pygame.K_UP or event.key == pygame.K_w and not self.game_over:
                     temp = self.player.move(0, -1, self.maze)
                     if not temp:
                         self.game_over = True
-                    self.score+=1
-                elif event.key == pygame.K_DOWN or event.key == pygame.K_s:
+                    else:
+                        self.score+=1
+                elif event.key == pygame.K_DOWN or event.key == pygame.K_s and not self.game_over:
                     temp = self.player.move(0, 1, self.maze)
                     if not temp:
                         self.game_over = True
-                    self.score+=1
-                elif event.key == pygame.K_LEFT or event.key == pygame.K_a:
+                    else:
+                        self.score+=1
+                elif event.key == pygame.K_LEFT or event.key == pygame.K_a and not self.game_over:
                     temp = self.player.move(-1, 0, self.maze)
                     if not temp:
                         self.game_over = True
-                    self.score+=1
-                elif event.key == pygame.K_RIGHT or event.key == pygame.K_d:
+                    else:
+                        self.score+=1
+                elif event.key == pygame.K_RIGHT or event.key == pygame.K_d and not self.game_over:
                     temp = self.player.move(1, 0, self.maze)
                     if not temp:
                         self.game_over = True
-                    self.score+=1
+                    else:
+                        self.score+=1
+                elif event.key == pygame.K_SPACE and self.game_over:
+                    self.restart()
+    
     
     def update(self):
-        print(self.player.get_position())
+        #print(self.player.get_position())
         if self.player.get_position() == FINISH_LINE:
             self.running = False
     
@@ -127,7 +139,6 @@ class Game:
         self.player.draw(self.screen)
         score_text = self.font.render(f"Score: {self.score}", True, BLACK)
         self.screen.blit(score_text, (0, 625))
-        pygame.display.flip()
         if self.game_over:
             overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
             overlay.set_alpha(128)
@@ -141,6 +152,7 @@ class Game:
             self.screen.blit(game_over_text, (SCREEN_WIDTH//2 - game_over_text.get_width()//2, SCREEN_HEIGHT//2 - 80))
             self.screen.blit(final_score, (SCREEN_WIDTH//2 - final_score.get_width()//2, SCREEN_HEIGHT//2 - 30))
             self.screen.blit(restart_text, (SCREEN_WIDTH//2 - restart_text.get_width()//2, SCREEN_HEIGHT//2 + 50))
+        pygame.display.flip()
     
     def run(self):
         while self.running:
