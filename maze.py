@@ -160,8 +160,6 @@ class Game:
             self.update()
             self.draw()
             self.clock.tick(60)
-        pygame.quit()
-        sys.exit()
 
 if __name__ == "__main__":
     game = Game()
