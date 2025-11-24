@@ -1,6 +1,7 @@
 import pygame
 import random
 import sys
+from colors import *
 
 pygame.init()
 
@@ -11,12 +12,6 @@ JUMP_FORCE = -12
 PIPE_WIDTH = 80
 PIPE_GAP = 200
 PIPE_SPEED = 4
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-YELLOW = (255, 255, 0)
-GREEN = (0, 200, 0)
-RED = (255, 0, 0)
-BLUE = (135, 206, 235)
 
 class Bird:
     def __init__(self):

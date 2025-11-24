@@ -1,5 +1,6 @@
 import pygame
 import sys
+from colors import *
 
 pygame.init()
 TILE_SIZE = 40
@@ -7,12 +8,6 @@ MAZE_WIDTH = 15
 MAZE_HEIGHT = 15
 SCREEN_WIDTH = MAZE_WIDTH * TILE_SIZE
 SCREEN_HEIGHT = MAZE_HEIGHT * TILE_SIZE + 60
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-GRAY = (100, 100, 100)
-LIGHT_GRAY = (200, 200, 200)
-DARK_GRAY = (60, 60, 60)
-BLUE = (50, 120, 200)
 
 MAZE = [
     [1,0,1,1,1,1,1,1,1,1,1,1,1,1,1],
@@ -90,6 +85,8 @@ class Game:
         self.player = Player(START_POSITION[0],START_POSITION[1])
         self.score = 0
         self.font = pygame.font.Font(None, 48)
+        self.small_font = pygame.font.Font(None, 32)
+        self.game_over = False
         
     def handle_events(self):
         for event in pygame.event.get():
@@ -99,16 +96,24 @@ class Game:
                 if event.key == pygame.K_ESCAPE:
                     self.running = False
                 elif event.key == pygame.K_UP or event.key == pygame.K_w:
-                    self.player.move(0, -1, self.maze)
+                    temp = self.player.move(0, -1, self.maze)
+                    if not temp:
+                        self.game_over = True
                     self.score+=1
                 elif event.key == pygame.K_DOWN or event.key == pygame.K_s:
-                    self.player.move(0, 1, self.maze)
+                    temp = self.player.move(0, 1, self.maze)
+                    if not temp:
+                        self.game_over = True
                     self.score+=1
                 elif event.key == pygame.K_LEFT or event.key == pygame.K_a:
-                    self.player.move(-1, 0, self.maze)
+                    temp = self.player.move(-1, 0, self.maze)
+                    if not temp:
+                        self.game_over = True
                     self.score+=1
                 elif event.key == pygame.K_RIGHT or event.key == pygame.K_d:
-                    self.player.move(1, 0, self.maze)
+                    temp = self.player.move(1, 0, self.maze)
+                    if not temp:
+                        self.game_over = True
                     self.score+=1
     
     def update(self):
@@ -123,6 +128,19 @@ class Game:
         score_text = self.font.render(f"Score: {self.score}", True, BLACK)
         self.screen.blit(score_text, (0, 625))
         pygame.display.flip()
+        if self.game_over:
+            overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+            overlay.set_alpha(128)
+            overlay.fill((0, 0, 0))
+            self.screen.blit(overlay, (0, 0))
+            
+            game_over_text = self.font.render("GAME OVER!", True, RED)
+            final_score = self.small_font.render(f"Score: {self.score}", True, WHITE)
+            restart_text = self.small_font.render("SPACE - restart, ESC - exit", True, WHITE)
+            
+            self.screen.blit(game_over_text, (SCREEN_WIDTH//2 - game_over_text.get_width()//2, SCREEN_HEIGHT//2 - 80))
+            self.screen.blit(final_score, (SCREEN_WIDTH//2 - final_score.get_width()//2, SCREEN_HEIGHT//2 - 30))
+            self.screen.blit(restart_text, (SCREEN_WIDTH//2 - restart_text.get_width()//2, SCREEN_HEIGHT//2 + 50))
     
     def run(self):
         while self.running:
