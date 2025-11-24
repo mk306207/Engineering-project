@@ -88,6 +88,8 @@ class Game:
         self.maze = Maze()
         self.running = True
         self.player = Player(START_POSITION[0],START_POSITION[1])
+        self.score = 0
+        self.font = pygame.font.Font(None, 48)
         
     def handle_events(self):
         for event in pygame.event.get():
@@ -98,12 +100,16 @@ class Game:
                     self.running = False
                 elif event.key == pygame.K_UP or event.key == pygame.K_w:
                     self.player.move(0, -1, self.maze)
+                    self.score+=1
                 elif event.key == pygame.K_DOWN or event.key == pygame.K_s:
                     self.player.move(0, 1, self.maze)
+                    self.score+=1
                 elif event.key == pygame.K_LEFT or event.key == pygame.K_a:
                     self.player.move(-1, 0, self.maze)
+                    self.score+=1
                 elif event.key == pygame.K_RIGHT or event.key == pygame.K_d:
                     self.player.move(1, 0, self.maze)
+                    self.score+=1
     
     def update(self):
         print(self.player.get_position())
@@ -114,6 +120,8 @@ class Game:
         self.screen.fill(WHITE)
         self.maze.draw(self.screen)
         self.player.draw(self.screen)
+        score_text = self.font.render(f"Score: {self.score}", True, BLACK)
+        self.screen.blit(score_text, (0, 625))
         pygame.display.flip()
     
     def run(self):
