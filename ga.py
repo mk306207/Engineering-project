@@ -36,4 +36,18 @@ class genetic_algorithm:
                 print(self.population)
             #Population for bird genom = [y_weight,x_weight,velocity_weight,bias]
 
+    def fitness(self, maze_player, finish_line):
+        if self.game == 'Maze':
+            distance = abs(maze_player.x - finish_line[0]) + abs(maze_player.y - finish_line[1])
+            fitness_score = 1000 - distance
+            if (maze_player.x, maze_player.y) == finish_line:
+                fitness_score = 10000 - maze_player.moves 
+            wasted_moves = maze_player.moves - maze_player.successful_moves
+            fitness_score -= wasted_moves * 5
+            return max(0, fitness_score)
+        
+        elif self.game == 'Bird':
+            # TODO: fitness for Bird
+            return 0
+        
 genetic_algorithm("Bird").create_population()

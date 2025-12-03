@@ -1,34 +1,9 @@
 import pygame
 import sys
 from colors import *
+from maze_config import *
 
 pygame.init()
-TILE_SIZE = 40
-MAZE_WIDTH = 15
-MAZE_HEIGHT = 15
-SCREEN_WIDTH = MAZE_WIDTH * TILE_SIZE
-SCREEN_HEIGHT = MAZE_HEIGHT * TILE_SIZE + 60
-
-MAZE = [
-    [1,0,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,0,0,0,1,0,0,0,0,0,0,0,0,0,1],
-    [1,0,1,0,1,0,1,1,1,1,1,1,1,0,1],
-    [1,0,1,0,0,0,0,0,0,0,0,0,1,0,1],
-    [1,0,1,1,1,1,1,1,0,1,1,0,1,0,1],
-    [1,0,0,0,0,0,0,0,0,1,1,0,1,0,1],
-    [1,0,1,1,1,1,1,1,0,1,1,0,1,0,1],
-    [1,0,1,0,0,0,0,0,0,0,0,0,1,0,1],
-    [1,0,1,0,1,1,1,1,1,1,1,1,1,0,1],
-    [1,0,1,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,1,1,1,1,1,0,1,1,1,1,1,0,1],
-    [1,0,0,0,0,0,0,0,1,0,0,0,1,0,1],
-    [1,1,1,1,1,1,1,0,1,0,1,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,1,0,1,0,1],
-    [1,1,1,1,1,1,1,1,1,1,1,1,1,0,1],
-]
-
-START_POSITION = (1,0)
-FINISH_LINE = (13,14)
 
 class Player:
     def __init__(self, x, y):
@@ -160,6 +135,39 @@ class Game:
             self.update()
             self.draw()
             self.clock.tick(60)
+
+def simulate_agents(screen, maze, maze_players, clock):
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    return
+        all_done = all(not maze_player.is_alive for maze_player in maze_players)
+        if all_done:
+            print("Finished!")
+            pygame.time.wait(2000)
+            return
+        
+        for maze_player in maze_players:
+            if maze_player.is_alive:
+                maze_player.move_mp(maze)
+                if maze_player.get_position() == FINISH_LINE:
+                    maze_player.is_alive = False
+        
+        screen.fill(BLACK)
+        maze.draw(screen)      
+        for maze_player in maze_players:
+            maze_player.draw(screen)
+        
+        font = pygame.font.Font(None, 30)
+        alive_count = sum(1 for maze_player in maze_players if maze_player.is_alive)
+        text = font.render(f"Alive: {alive_count}/{len(maze_players)}", True, WHITE)
+        screen.blit(text, (10, SCREEN_HEIGHT - 50)) 
+        pygame.display.flip()
+        clock.tick(30)
 
 if __name__ == "__main__":
     game = Game()
