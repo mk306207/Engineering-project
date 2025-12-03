@@ -54,12 +54,16 @@ def start_maze_ai():
     print(f"Created {len(players)} players")
     simulate_agents(screen, maze_obj, players, clock)
     print("\n=== Generation 1 ===")
-    for i, player in enumerate(players):
-        player.fitness = ga.fitness(player,FINISH_LINE)
-        if i < 5 or player.fitness > 900:
-            print(f"Player {i+1}: position {player.get_position()}, fitness = {player.fitness}")
+    for player in players:
+        player.fitness = ga.fitness(player, FINISH_LINE)
 
-    best_player = max(players, key=lambda a: a.fitness)
+    sorted_players = sorted(players, key=lambda player: player.fitness, reverse=True)
+    
+    for i, player in enumerate(sorted_players):
+        if i < 5:
+            print(f"Player {i+1}: position {player.get_position()}, fitness = {player.fitness:.2f}, moves = {player.successful_moves}")
+
+    best_player = sorted_players[0]
     print(f"\nBest player = {best_player.fitness:.2f}, his position = {best_player.get_position()}")
     pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 

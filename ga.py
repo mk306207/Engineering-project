@@ -23,17 +23,15 @@ class genetic_algorithm:
         elif self.game == "Bird":
             for chromosome in range(0,self.population_size):
                 genom = []
-                for i in range(0,200):
-                    w_y   = random.uniform(-2.0, 2.0)
-                    w_x   = random.uniform(-1.0, 1.0)
-                    w_v   = random.uniform(-2.0, 2.0)
-                    bias  = random.uniform(-1.0, 1.0)
-                    genom.append(w_y)
-                    genom.append(w_x)
-                    genom.append(w_v)
-                    genom.append(bias)
+                w_y   = random.uniform(-2.0, 2.0)
+                w_x   = random.uniform(-1.0, 1.0)
+                w_v   = random.uniform(-2.0, 2.0)
+                bias  = random.uniform(-1.0, 1.0)
+                genom.append(w_y)
+                genom.append(w_x)
+                genom.append(w_v)
+                genom.append(bias)
                 self.population.append(genom)
-                print(self.population)
             #Population for bird genom = [y_weight,x_weight,velocity_weight,bias]
 
     def fitness(self, maze_player, finish_line):
@@ -49,5 +47,3 @@ class genetic_algorithm:
         elif self.game == 'Bird':
             # TODO: fitness for Bird
             return 0
-        
-genetic_algorithm("Bird").create_population()

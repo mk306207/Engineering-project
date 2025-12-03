@@ -148,7 +148,6 @@ def simulate_agents(screen, maze, maze_players, clock):
         all_done = all(not maze_player.is_alive for maze_player in maze_players)
         if all_done:
             print("Finished!")
-            pygame.time.wait(2000)
             return
         
         for maze_player in maze_players:
@@ -165,6 +164,8 @@ def simulate_agents(screen, maze, maze_players, clock):
         font = pygame.font.Font(None, 30)
         alive_count = sum(1 for maze_player in maze_players if maze_player.is_alive)
         text = font.render(f"Alive: {alive_count}/{len(maze_players)}", True, WHITE)
+        screen.blit(text, (10, SCREEN_HEIGHT - 50)) 
+        text = font.render(f"Generation: {alive_count}", True, WHITE)
         screen.blit(text, (10, SCREEN_HEIGHT - 50)) 
         pygame.display.flip()
         clock.tick(30)
