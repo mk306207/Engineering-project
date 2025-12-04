@@ -136,7 +136,7 @@ class Game:
             self.draw()
             self.clock.tick(60)
 
-def simulate_agents(screen, maze, maze_players, clock):
+def simulate_players(screen, maze, maze_players, clock, generation):
     running = True
     while running:
         for event in pygame.event.get():
@@ -165,8 +165,8 @@ def simulate_agents(screen, maze, maze_players, clock):
         alive_count = sum(1 for maze_player in maze_players if maze_player.is_alive)
         text = font.render(f"Alive: {alive_count}/{len(maze_players)}", True, WHITE)
         screen.blit(text, (10, SCREEN_HEIGHT - 50)) 
-        text = font.render(f"Generation: {alive_count}", True, WHITE)
-        screen.blit(text, (10, SCREEN_HEIGHT - 50)) 
+        text = font.render(f"Generation: {generation}", True, WHITE)
+        screen.blit(text, (10, SCREEN_HEIGHT - 30)) 
         pygame.display.flip()
         clock.tick(30)
 

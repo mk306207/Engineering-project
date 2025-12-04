@@ -6,7 +6,7 @@ from colors import *
 import maze
 import bird
 from ga import genetic_algorithm
-from maze import simulate_agents, Maze
+from maze import simulate_players, Maze
 from ai_players import Maze_player
 pygame.init()
 
@@ -35,7 +35,7 @@ def start_maze_ai():
     maze_obj = Maze()
     ga = genetic_algorithm("Maze")
     ga.create_population()
-    print(f"{len(ga.population)}")
+    #print(f"{len(ga.population)}")
     players = []
     for i, genom in enumerate(ga.population):
         color = (
@@ -51,20 +51,53 @@ def start_maze_ai():
         )
         players.append(player)
     
-    print(f"Created {len(players)} players")
-    simulate_agents(screen, maze_obj, players, clock)
-    print("\n=== Generation 1 ===")
-    for player in players:
-        player.fitness = ga.fitness(player, FINISH_LINE)
+    #print(f"Created {len(players)} players")
+    sorted_players = []
+    expected_fitness = 900
+    current_fitness = 0
+    generation_id = 0
+    while(expected_fitness>current_fitness):
+        ga.generation = generation_id
+        if not generation_id == 0:
+            ga.evolve(sorted_players, elite_count=2)
+            players.clear()
+            #print(len(ga.population))
+            for i, genom in enumerate(ga.population):
+                is_elite = any(genom == elite_genom for elite_genom in ga.elite_genomes)
+                
+                if is_elite:
+                    color = (0, 255, 0)
+                else:
+                    color = (
+                        random.randint(50, 255), 
+                        random.randint(50, 255), 
+                        random.randint(50, 255)
+                    )
+                
+                player = Maze_player(
+                    START_POSITION[0],
+                    START_POSITION[1], 
+                    genom,
+                    color
+                )
+                player.is_elite = is_elite 
+                players.append(player)
 
-    sorted_players = sorted(players, key=lambda player: player.fitness, reverse=True)
-    
-    for i, player in enumerate(sorted_players):
-        if i < 5:
-            print(f"Player {i+1}: position {player.get_position()}, fitness = {player.fitness:.2f}, moves = {player.successful_moves}")
+        simulate_players(screen, maze_obj, players, clock, ga.generation)
+        print(f"\n=== Generation {generation_id} ===")
+        for player in players:
+            player.fitness = ga.fitness(player, FINISH_LINE)
+        sorted_players = sorted(players, key=lambda player: player.fitness, reverse=True)
+        
+        for i, player in enumerate(sorted_players):
+            if i < 5:
+                elite_marker = "(E)" if hasattr(player, 'is_elite') and player.is_elite else "   "
+                print(f"{elite_marker} Player {i+1}: position {player.get_position()}, fitness = {player.fitness:.2f}, moves = {player.successful_moves}")
 
-    best_player = sorted_players[0]
-    print(f"\nBest player = {best_player.fitness:.2f}, his position = {best_player.get_position()}")
+        best_player = sorted_players[0]
+        print(f"\nBest player = {best_player.fitness:.2f}, his position = {best_player.get_position()}, his color = {best_player.color}")
+        current_fitness = best_player.fitness
+        generation_id += 1
     pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 maze_button = Button(

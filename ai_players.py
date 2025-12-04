@@ -40,6 +40,8 @@ class Maze_player():
             center_x = self.x * TILE_SIZE + TILE_SIZE // 2
             center_y = self.y * TILE_SIZE + TILE_SIZE // 2
             pygame.draw.circle(screen, self.color, (center_x, center_y), self.radius)
+            if hasattr(self, 'is_elite') and self.is_elite:
+                pygame.draw.circle(screen, (255, 215, 0), (center_x, center_y), self.radius + 2, 2)
 
     def get_position(self):
         return (self.x, self.y)
