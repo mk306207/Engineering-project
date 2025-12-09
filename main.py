@@ -27,9 +27,9 @@ def start_bird():
 
 def start_maze_ai():
     import random
-    from maze_config import START_POSITION, FINISH_LINE, SCREEN_WIDTH as MAZE_SCREEN_WIDTH, SCREEN_HEIGHT as MAZE_SCREEN_HEIGHT
+    from maze_config import START_POSITION, FINISH_LINE, SCREEN_WIDTH as MAZE_SCREEN_WIDTH, SCREEN_HEIGHT as MAZE_SCREEN_HEIGHT,WINNER_FINISH_LINE,WINNER_START_POSITION
 
-    screen = pygame.display.set_mode((MAZE_SCREEN_WIDTH, MAZE_SCREEN_HEIGHT))
+    screen = pygame.display.set_mode((MAZE_SCREEN_WIDTH*2, MAZE_SCREEN_HEIGHT))
     pygame.display.set_caption("AI Game2")
     clock = pygame.time.Clock()
     maze_obj = Maze()
@@ -52,11 +52,13 @@ def start_maze_ai():
         players.append(player)
     
     #print(f"Created {len(players)} players")
+    user_interrupt = False
     sorted_players = []
-    expected_fitness = 900
+    expected_fitness = 9900
     current_fitness = 0
     generation_id = 0
-    while(expected_fitness>current_fitness):
+    best_player_object = None
+    while(expected_fitness>current_fitness and not user_interrupt):
         ga.generation = generation_id
         if not generation_id == 0:
             ga.evolve(sorted_players, elite_count=2)
@@ -83,7 +85,7 @@ def start_maze_ai():
                 player.is_elite = is_elite 
                 players.append(player)
 
-        simulate_players(screen, maze_obj, players, clock, ga.generation)
+        user_interrupt = simulate_players(screen, maze_obj, players, clock, ga.generation,best_player_object)
         print(f"\n=== Generation {generation_id} ===")
         for player in players:
             player.fitness = ga.fitness(player, FINISH_LINE)
@@ -92,9 +94,17 @@ def start_maze_ai():
         for i, player in enumerate(sorted_players):
             if i < 5:
                 elite_marker = "(E)" if hasattr(player, 'is_elite') and player.is_elite else "   "
-                print(f"{elite_marker} Player {i+1}: position {player.get_position()}, fitness = {player.fitness:.2f}, moves = {player.successful_moves}")
+                print(f"{elite_marker} Player {i+1}: position {player.get_position()}, fitness = {player.fitness:.2f}, successful moves = {player.successful_moves}, unsuccessful moves = {player.unsuccessful_moves}")
 
         best_player = sorted_players[0]
+        best_player_genom = best_player.get_genom()
+        print(best_player_genom)
+        best_player_object = Maze_player(
+            WINNER_START_POSITION[0],
+            WINNER_START_POSITION[1], 
+            best_player_genom,
+            BLACK
+        )
         print(f"\nBest player = {best_player.fitness:.2f}, his position = {best_player.get_position()}, his color = {best_player.color}")
         current_fitness = best_player.fitness
         generation_id += 1

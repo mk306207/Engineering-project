@@ -10,6 +10,7 @@ class Maze_player():
         self.genom = genom
         self.moves = 0
         self.successful_moves = 0
+        self.unsuccessful_moves = 0
         self.is_alive = True
         self.color = color
         self.radius = TILE_SIZE // 4
@@ -34,6 +35,8 @@ class Maze_player():
             self.x = new_x
             self.y = new_y
             self.successful_moves += 1
+        else:
+            self.unsuccessful_moves += 1
 
     def draw(self,screen):
         if self.is_alive:
@@ -43,5 +46,16 @@ class Maze_player():
             if hasattr(self, 'is_elite') and self.is_elite:
                 pygame.draw.circle(screen, (255, 215, 0), (center_x, center_y), self.radius + 2, 2)
 
+    def draw_copy(self, screen, offset_x=0):
+        if self.is_alive:
+            center_x = self.x * TILE_SIZE + TILE_SIZE // 2 + offset_x
+            center_y = self.y * TILE_SIZE + TILE_SIZE // 2
+            pygame.draw.circle(screen, self.color, (center_x, center_y), self.radius)
+            if hasattr(self, 'is_elite') and self.is_elite:
+                pygame.draw.circle(screen, (255, 215, 0), (center_x, center_y), self.radius + 2, 2)
+
     def get_position(self):
         return (self.x, self.y)
+    
+    def get_genom(self):
+        return self.genom

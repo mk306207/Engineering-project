@@ -49,6 +49,16 @@ class Maze:
                 else:
                     pygame.draw.rect(screen, WHITE, rect)
                     pygame.draw.rect(screen, LIGHT_GRAY, rect, 1)
+    def draw_copy(self, screen, offset_x=0):
+        for y in range(self.height):
+            for x in range(self.width):
+                rect = pygame.Rect(x * TILE_SIZE + offset_x, y * TILE_SIZE, TILE_SIZE, TILE_SIZE)
+                if self.grid[y][x] == 1:
+                    pygame.draw.rect(screen, DARK_GRAY, rect)
+                    pygame.draw.rect(screen, GRAY, rect, 2)
+                else:
+                    pygame.draw.rect(screen, WHITE, rect)
+                    pygame.draw.rect(screen, LIGHT_GRAY, rect, 1)
 
 class Game:
     def __init__(self):
@@ -136,15 +146,17 @@ class Game:
             self.draw()
             self.clock.tick(60)
 
-def simulate_players(screen, maze, maze_players, clock, generation):
+def simulate_players(screen, maze, maze_players, clock, generation,best_player):
     running = True
+    winner_maze = maze
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                return
+                return True
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    return
+                    return True
+                
         all_done = all(not maze_player.is_alive for maze_player in maze_players)
         if all_done:
             print("Finished!")
@@ -155,11 +167,23 @@ def simulate_players(screen, maze, maze_players, clock, generation):
                 maze_player.move_mp(maze)
                 if maze_player.get_position() == FINISH_LINE:
                     maze_player.is_alive = False
+
+        if best_player is not None:
+            if best_player.is_alive:
+                best_player.move_mp(winner_maze)
+                #print(best_player.get_position())
+                if best_player.get_position() == WINNER_FINISH_LINE:
+                    best_player.is_alive = False
+        
         
         screen.fill(BLACK)
-        maze.draw(screen)      
+        maze.draw(screen)
+        winner_maze.draw_copy(screen, offset_x=SCREEN_WIDTH)      
         for maze_player in maze_players:
             maze_player.draw(screen)
+        
+        if best_player is not None:
+            best_player.draw_copy(screen, offset_x=SCREEN_WIDTH)
         
         font = pygame.font.Font(None, 30)
         alive_count = sum(1 for maze_player in maze_players if maze_player.is_alive)
@@ -168,7 +192,7 @@ def simulate_players(screen, maze, maze_players, clock, generation):
         text = font.render(f"Generation: {generation}", True, WHITE)
         screen.blit(text, (10, SCREEN_HEIGHT - 30)) 
         pygame.display.flip()
-        clock.tick(30)
+        clock.tick(SIM_SPEED)
 
 if __name__ == "__main__":
     game = Game()
