@@ -144,6 +144,9 @@ def start_maze_ai():
     
     pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
+def start_bird_ai():
+    pass
+
 maze_button = Button(
     win,  # Surface to place button on
     150,  # X-coordinate of top left corner
@@ -192,6 +195,22 @@ bird_button = Button(
     onClick=start_bird
 )
 
+bird_ai_button = Button(
+    win,  # Surface to place button on
+    580,  # X-coordinate of top left corner
+    450,  # Y-coordinate of top left corner
+    80,  # Width
+    50,  # Height
+    text='Bird AI',
+    fontSize=20,
+    margin=5,
+    inactiveColour=YELLOW,
+    hoverColour=WHITE,
+    pressedColour=WHITE,
+    radius=50,
+    onClick=start_bird_ai
+)
+
 class GUI:
     def __init__(self,win):
         self.screen = win
@@ -200,6 +219,7 @@ class GUI:
         self.maze_button = maze_button
         self.bird_button = bird_button
         self.maze_ai_button = maze_ai_button
+        self.bird_ai_button = bird_ai_button
 
     def update(self):
         return
@@ -210,6 +230,7 @@ class GUI:
         self.maze_button.draw()
         self.bird_button.draw()
         self.maze_ai_button.draw()
+        self.bird_ai_button.draw()
         pygame.display.flip()
 
     def handle_events(self):
