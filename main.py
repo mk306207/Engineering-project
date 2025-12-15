@@ -8,6 +8,8 @@ import bird
 from ga import genetic_algorithm
 from maze import simulate_players, Maze
 from ai_players import Maze_player
+import matplotlib.pyplot as plt
+from io import BytesIO
 pygame.init()
 
 SCREEN_WIDTH = 800
@@ -58,6 +60,7 @@ def start_maze_ai():
     current_fitness = 0
     generation_id = 0
     best_player_object = None
+    avg_fitness = []    
     while(expected_fitness>current_fitness and not user_interrupt):
         ga.generation = generation_id
         if not generation_id == 0:
@@ -86,9 +89,12 @@ def start_maze_ai():
                 players.append(player)
 
         user_interrupt = simulate_players(screen, maze_obj, players, clock, ga.generation,best_player_object)
+        total_fitness = 0
         print(f"\n=== Generation {generation_id} ===")
         for player in players:
             player.fitness = ga.fitness(player, FINISH_LINE)
+            total_fitness += player.fitness
+        avg_fitness.append(total_fitness/50)
         sorted_players = sorted(players, key=lambda player: player.fitness, reverse=True)
         
         for i, player in enumerate(sorted_players):
@@ -108,6 +114,34 @@ def start_maze_ai():
         print(f"\nBest player = {best_player.fitness:.2f}, his position = {best_player.get_position()}, his color = {best_player.color}")
         current_fitness = best_player.fitness
         generation_id += 1
+    
+    plt.figure(figsize=(10, 6))
+    plt.plot(range(len(avg_fitness)), avg_fitness, linewidth=2, color='blue', marker='o', markersize=4)
+    plt.xlabel('Generation ID', fontsize=12)
+    plt.ylabel('Average Fitness', fontsize=12)
+    plt.title('Average Fitness per Generation', fontsize=14, fontweight='bold')
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    buf = BytesIO()
+    plt.savefig(buf, format='png', dpi=80)
+    buf.seek(0)
+    plt.close()
+    graph_image = pygame.image.load(buf)
+    buf.close()
+    graph_screen = pygame.display.set_mode((800, 600))
+    pygame.display.set_caption("AI Game2 - Results")
+    showing_graph = True
+    while showing_graph:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+                showing_graph = False
+                pygame.display.set_caption("GUI")
+        
+        graph_screen.fill(WHITE)
+        graph_screen.blit(graph_image, (0, 0))
+        pygame.display.flip()
+        clock.tick(30)
+    
     pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 maze_button = Button(
