@@ -146,7 +146,7 @@ class Game:
             self.draw()
             self.clock.tick(60)
 
-def simulate_players(screen, maze, maze_players, clock, generation,best_player):
+def simulate_maze_players(screen, maze, maze_players, clock, generation,best_player):
     running = True
     winner_maze = maze
     while running:

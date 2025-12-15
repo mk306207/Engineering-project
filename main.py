@@ -6,7 +6,8 @@ from colors import *
 import maze
 import bird
 from ga import genetic_algorithm
-from maze import simulate_players, Maze
+from maze import simulate_maze_players, Maze
+from bird import simulate_bird_players, Bird
 from ai_players import Maze_player
 import matplotlib.pyplot as plt
 from io import BytesIO
@@ -88,7 +89,7 @@ def start_maze_ai():
                 player.is_elite = is_elite 
                 players.append(player)
 
-        user_interrupt = simulate_players(screen, maze_obj, players, clock, ga.generation,best_player_object)
+        user_interrupt = simulate_maze_players(screen, maze_obj, players, clock, ga.generation,best_player_object)
         total_fitness = 0
         print(f"\n=== Generation {generation_id} ===")
         for player in players:
@@ -145,7 +146,11 @@ def start_maze_ai():
     pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 def start_bird_ai():
-    pass
+    from bird_config import SCREEN_WIDTH as BIRD_SCREEN_WIDTH, SCREEN_HEIGHT as BIRD_SCREEN_HEIGHT
+
+    screen = pygame.display.set_mode((BIRD_SCREEN_WIDTH*2, BIRD_SCREEN_HEIGHT))
+    pygame.display.set_caption("AI Game1")
+    clock = pygame.time.Clock()
 
 maze_button = Button(
     win,  # Surface to place button on

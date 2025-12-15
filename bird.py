@@ -2,16 +2,8 @@ import pygame
 import random
 import sys
 from colors import *
-
+from bird_config import *
 pygame.init()
-
-SCREEN_WIDTH = 600
-SCREEN_HEIGHT = 800
-GRAVITY = 0.8
-JUMP_FORCE = -12
-PIPE_WIDTH = 80
-PIPE_GAP = 200
-PIPE_SPEED = 4
 
 class Bird:
     def __init__(self):
@@ -188,6 +180,9 @@ class Game:
             self.update()
             self.draw()
             self.clock.tick(60)
+
+def simulate_bird_players():
+    print("Hello")
 
 if __name__ == "__main__":
     game = Game()
