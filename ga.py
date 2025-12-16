@@ -35,19 +35,22 @@ class genetic_algorithm:
                 self.population.append(genom)
             #Population for bird genom = [y_weight,x_weight,velocity_weight,bias]
 
-    def fitness(self, maze_player, finish_line):
+    def fitness(self, player, finish_line=None):
         if self.game == 'Maze':
-            distance = abs(maze_player.x - finish_line[0]) + abs(maze_player.y - finish_line[1])
+            distance = abs(player.x - finish_line[0]) + abs(player.y - finish_line[1])
             fitness_score = 1000 - distance
-            if (maze_player.x, maze_player.y) == finish_line:
-                fitness_score = 10000 - maze_player.moves 
-            wasted_moves = maze_player.moves - maze_player.successful_moves
+            if (player.x, player.y) == finish_line:
+                fitness_score = 10000 - player.moves 
+            wasted_moves = player.moves - player.successful_moves
             fitness_score -= wasted_moves * 5
             return max(0, fitness_score)
         
         elif self.game == 'Bird':
-            # TODO: fitness for Bird
-            return 0
+            fitness_score = 0
+            fitness_score += player.frames_alive
+            fitness_score += player.score * 1000
+            fitness_score += player.distance_traveled * 0.1 
+            return max(0, fitness_score)
         
     def live_longer(self,survivor):
         self.kids.append(survivor)

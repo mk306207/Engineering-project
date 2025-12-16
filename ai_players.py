@@ -1,4 +1,5 @@
 from maze_config import *
+from bird_config import *
 import pygame
 
 pygame.init()
@@ -59,3 +60,9 @@ class Maze_player():
     
     def get_genom(self):
         return self.genom
+    
+class Bird_player():
+    def __init__(self, color):
+        self.score = 0
+        self.is_alive = True
+        self.color = color
