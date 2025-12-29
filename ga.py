@@ -75,7 +75,10 @@ class genetic_algorithm:
                     mutations_count += 1
         
         elif self.game == "Bird":
-            pass
+            for i in range(len(mutated)):
+                if random.random() < mutation_rate:
+                    mutated[i] += random.uniform(-0.5, 0.5)
+                    mutations_count += 1
         
         return mutated
 

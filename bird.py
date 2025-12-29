@@ -181,8 +181,67 @@ class Game:
             self.draw()
             self.clock.tick(60)
 
-def simulate_bird_players():
-    print("Hello")
+def simulate_bird_players(screen, bird_players, clock, generation):
+    running = True
+    pipes = []
+    for i in range(3):
+        pipes.append(Pipe(SCREEN_WIDTH + i * 300))
+    
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return True
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    return True
+                
+        all_dead = all(not bird.is_alive for bird in bird_players)
+        if all_dead:
+            print("Simulation finished")
+            return False
+        for pipe in pipes[:]:
+            pipe.update()
+            for bird in bird_players:
+                if bird.is_alive:
+                    if pipe.collides_with_bird(bird):
+                        bird.is_alive = False
+                    if not pipe.passed and pipe.is_passed(bird):
+                        pipe.passed = True
+                        bird.score += 1
+            if pipe.x + PIPE_WIDTH < 0:
+                pipes.remove(pipe)
+        if len(pipes) < 3:
+            last_pipe_x = max(pipe.x for pipe in pipes)
+            pipes.append(Pipe(last_pipe_x + 300))
+        for bird in bird_players:
+            if bird.is_alive:
+                bird.update(pipes)
+        for y in range(SCREEN_HEIGHT):
+            color_ratio = y / SCREEN_HEIGHT
+            r = int(135 + (255 - 135) * color_ratio)
+            g = int(206 + (255 - 206) * color_ratio)
+            b = int(235 + (255 - 235) * color_ratio)
+            pygame.draw.line(screen, (r, g, b), (0, y), (SCREEN_WIDTH, y))
+        for pipe in pipes:
+            pipe.draw(screen)
+        for bird in bird_players:
+            bird.draw(screen)
+
+        font = pygame.font.Font(None, 30)
+        alive_count = sum(1 for bird in bird_players if bird.is_alive)
+        text = font.render(f"Alive: {alive_count}/{len(bird_players)}", True, BLACK)
+        screen.blit(text, (10, SCREEN_HEIGHT - 50))
+        text = font.render(f"Generation: {generation}", True, BLACK)
+        screen.blit(text, (10, SCREEN_HEIGHT - 30))
+        if bird_players:
+            best_score = max(bird.score for bird in bird_players)
+            text = font.render(f"Best score: {best_score}", True, BLACK)
+            screen.blit(text, (10, 10))
+        
+        pygame.display.flip()
+        clock.tick(60)
+    
+    return False
 
 if __name__ == "__main__":
     game = Game()

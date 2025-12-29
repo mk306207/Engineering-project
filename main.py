@@ -8,7 +8,7 @@ import bird
 from ga import genetic_algorithm
 from maze import simulate_maze_players, Maze
 from bird import simulate_bird_players, Bird
-from ai_players import Maze_player
+from ai_players import Maze_player, Bird_player
 import matplotlib.pyplot as plt
 from io import BytesIO
 pygame.init()
@@ -146,11 +146,28 @@ def start_maze_ai():
     pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 def start_bird_ai():
+    import random
     from bird_config import SCREEN_WIDTH as BIRD_SCREEN_WIDTH, SCREEN_HEIGHT as BIRD_SCREEN_HEIGHT
 
     screen = pygame.display.set_mode((BIRD_SCREEN_WIDTH*2, BIRD_SCREEN_HEIGHT))
     pygame.display.set_caption("AI Game1")
     clock = pygame.time.Clock()
+    ga = genetic_algorithm("Bird")
+    players = []
+    ga.create_population()
+    players = []
+    for i,genom in enumerate(ga.population): #i is just to delete genom id, its useless so you can assume that "i" variable is just a placeholder i guess
+        color = (
+            random.randint(50, 255), 
+            random.randint(50, 255), 
+            random.randint(50, 255)
+        )
+        player = Bird_player(
+            genom,
+            color
+        )
+        #print(f"{genom}\n")
+        players.append(player)
 
 maze_button = Button(
     win,  # Surface to place button on
