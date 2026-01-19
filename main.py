@@ -30,7 +30,7 @@ def start_bird():
 
 def start_maze_ai():
     import random
-    from maze_config import START_POSITION, FINISH_LINE, SCREEN_WIDTH as MAZE_SCREEN_WIDTH, SCREEN_HEIGHT as MAZE_SCREEN_HEIGHT,WINNER_FINISH_LINE,WINNER_START_POSITION
+    from maze_config import START_POSITION, FINISH_LINE, SCREEN_WIDTH as MAZE_SCREEN_WIDTH, SCREEN_HEIGHT as MAZE_SCREEN_HEIGHT,WINNER_FINISH_LINE,WINNER_START_POSITION,SATISFACTORY_FITNESS
 
     screen = pygame.display.set_mode((MAZE_SCREEN_WIDTH*2, MAZE_SCREEN_HEIGHT))
     pygame.display.set_caption("AI Game2")
@@ -57,11 +57,11 @@ def start_maze_ai():
     #print(f"Created {len(players)} players")
     user_interrupt = False
     sorted_players = []
-    expected_fitness = 9900
+    expected_fitness = SATISFACTORY_FITNESS
     current_fitness = 0
     generation_id = 0
     best_player_object = None
-    avg_fitness = []    
+    best_fitness = []
     while(expected_fitness>current_fitness and not user_interrupt):
         ga.generation = generation_id
         if not generation_id == 0:
@@ -69,7 +69,7 @@ def start_maze_ai():
             players.clear()
             #print(len(ga.population))
             for i, genom in enumerate(ga.population):
-                is_elite = any(genom == elite_genom for elite_genom in ga.elite_genomes)
+                is_elite = id(genom) in ga.elite_genome_ids
                 
                 if is_elite:
                     color = (0, 255, 0)
@@ -95,7 +95,6 @@ def start_maze_ai():
         for player in players:
             player.fitness = ga.fitness(player, FINISH_LINE)
             total_fitness += player.fitness
-        avg_fitness.append(total_fitness/50)
         sorted_players = sorted(players, key=lambda player: player.fitness, reverse=True)
         
         for i, player in enumerate(sorted_players):
@@ -105,6 +104,7 @@ def start_maze_ai():
 
         best_player = sorted_players[0]
         best_player_genom = best_player.get_genom()
+        best_fitness.append(best_player.fitness)
         print(best_player_genom)
         best_player_object = Maze_player(
             WINNER_START_POSITION[0],
@@ -117,10 +117,10 @@ def start_maze_ai():
         generation_id += 1
     
     plt.figure(figsize=(10, 6))
-    plt.plot(range(len(avg_fitness)), avg_fitness, linewidth=2, color='blue', marker='o', markersize=4)
+    plt.plot(range(len(best_fitness)), best_fitness, linewidth=2, color='blue', marker='o', markersize=4)
     plt.xlabel('Generation ID', fontsize=12)
-    plt.ylabel('Average Fitness', fontsize=12)
-    plt.title('Average Fitness per Generation', fontsize=14, fontweight='bold')
+    plt.ylabel('Best Fitness', fontsize=12)
+    plt.title('Best Fitness per Generation', fontsize=14, fontweight='bold')
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
     buf = BytesIO()
@@ -147,14 +147,14 @@ def start_maze_ai():
 
 def start_bird_ai():
     import random
-    from bird_config import SCREEN_WIDTH as BIRD_SCREEN_WIDTH, SCREEN_HEIGHT as BIRD_SCREEN_HEIGHT
+    from bird_config import SCREEN_WIDTH as BIRD_SCREEN_WIDTH, SCREEN_HEIGHT as BIRD_SCREEN_HEIGHT, SATISFACTORY_FITNESS
 
     screen = pygame.display.set_mode((BIRD_SCREEN_WIDTH*2, BIRD_SCREEN_HEIGHT))
     pygame.display.set_caption("AI Game1")
     clock = pygame.time.Clock()
     ga = genetic_algorithm("Bird")
-    players = []
     ga.create_population()
+    
     players = []
     for i,genom in enumerate(ga.population): #i is just to delete genom id, its useless so you can assume that "i" variable is just a placeholder i guess
         color = (
@@ -162,12 +162,94 @@ def start_bird_ai():
             random.randint(50, 255), 
             random.randint(50, 255)
         )
-        player = Bird_player(
-            genom,
-            color
-        )
-        #print(f"{genom}\n")
+        player = Bird_player(genom, color)
         players.append(player)
+    
+    expected_fitness = SATISFACTORY_FITNESS;current_fitness = 0;user_interrupt = False;sorted_players = [];generation_id = 0;best_fitness = [];best_player_object = None;best_seed = None
+    
+    # Stały seed dla całej ewolucji - wszystkie generacje mają te same rury
+    evolution_seed = random.randint(0, 1000000)
+    
+    while(expected_fitness>current_fitness and not user_interrupt):
+        ga.generation = generation_id
+
+        current_seed = evolution_seed  # Ten sam seed dla każdej generacji
+        if not generation_id == 0:
+            ga.evolve(sorted_players, elite_count=2)
+            players.clear()
+            for i, genom in enumerate(ga.population):
+                is_elite = id(genom) in ga.elite_genome_ids
+                
+                if is_elite:
+                    color = (0, 255, 0)
+                else:
+                    color = (
+                        random.randint(50, 255), 
+                        random.randint(50, 255), 
+                        random.randint(50, 255)
+                    )
+                
+                player = Bird_player(genom, color)
+                player.is_elite = is_elite 
+                players.append(player)
+        
+        user_interrupt = simulate_bird_players(screen, players, clock, ga.generation, best_player_object, current_seed, best_seed)
+        
+        # Calculate fitness
+        total_fitness = 0
+        print(f"\n=== Generation {generation_id} ===")
+        for player in players:
+            player.fitness = ga.fitness(player)
+            total_fitness += player.fitness
+        sorted_players = sorted(players, key=lambda player: player.fitness, reverse=True)
+        
+        # Print top 5
+        for i, player in enumerate(sorted_players):
+            if i < 5:
+                elite_marker = "(E)" if hasattr(player, 'is_elite') and player.is_elite else "   "
+                print(f"{elite_marker} Player {i+1}: fitness = {player.fitness:.2f}, score = {player.score}, frames = {player.frames_alive}")
+        
+        best_player = sorted_players[0]
+        best_player_genom = best_player.get_genom()
+        best_fitness.append(best_player.fitness)
+        best_player_object = Bird_player(best_player_genom, BLACK)
+        best_seed = current_seed  # Save seed from this generation
+        print(f"\nBest player = {best_player.fitness:.2f}, score = {best_player.score}, frames alive = {best_player.frames_alive}")
+        current_fitness = best_player.fitness
+        generation_id += 1
+    
+    # Display graph
+    plt.figure(figsize=(10, 6))
+    plt.plot(range(len(best_fitness)), best_fitness, linewidth=2, color='blue', marker='o', markersize=4)
+    plt.xlabel('Generation ID', fontsize=12)
+    plt.ylabel('Best Fitness', fontsize=12)
+    plt.title('Best Fitness per Generation - Bird', fontsize=14, fontweight='bold')
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    
+    buf = BytesIO()
+    plt.savefig(buf, format='png', dpi=80)
+    buf.seek(0)
+    plt.close()
+    
+    graph_image = pygame.image.load(buf)
+    buf.close()
+    
+    graph_screen = pygame.display.set_mode((800, 600))
+    pygame.display.set_caption("AI Game1 - Results")
+    
+    showing_graph = True
+    while showing_graph:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+                showing_graph = False
+        
+        graph_screen.fill(WHITE)
+        graph_screen.blit(graph_image, (0, 0))
+        pygame.display.flip()
+        clock.tick(30)
+    
+    pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 maze_button = Button(
     win,  # Surface to place button on

@@ -34,10 +34,15 @@ class Bird:
         return pygame.Rect(self.x - self.radius, self.y - self.radius, self.radius * 2, self.radius * 2)
 
 class Pipe:
-    def __init__(self, x):
+    _id_counter = 0  # Statyczny licznik dla unikalnych ID
+    
+    def __init__(self, x, gap_y=None):
         self.x = x
-        self.gap_y = random.randint(150, SCREEN_HEIGHT - 250)
+        self.gap_y = gap_y if gap_y is not None else random.randint(150, SCREEN_HEIGHT - 250)
         self.passed = False
+        # Przypisz unikalny ID który nie będzie zrecyklowany
+        Pipe._id_counter += 1
+        self.pipe_id = Pipe._id_counter
         
     def update(self):
         self.x -= PIPE_SPEED
@@ -58,6 +63,22 @@ class Pipe:
         pygame.draw.rect(screen, (0, 150, 0), bottom_cap)
         pygame.draw.rect(screen, BLACK, bottom_cap, 2)
     
+    def draw_copy(self, screen, offset_x=0):
+        top_rect = (self.x + offset_x, 0, PIPE_WIDTH, self.gap_y)
+        pygame.draw.rect(screen, GREEN, top_rect)
+        pygame.draw.rect(screen, BLACK, top_rect, 3)
+        bottom_rect = (self.x + offset_x, self.gap_y + PIPE_GAP, PIPE_WIDTH, SCREEN_HEIGHT - (self.gap_y + PIPE_GAP))
+        pygame.draw.rect(screen, GREEN, bottom_rect)
+        pygame.draw.rect(screen, BLACK, bottom_rect, 3)
+        cap_height = 30
+        cap_width = PIPE_WIDTH + 10
+        top_cap = (self.x - 5 + offset_x, self.gap_y - cap_height, cap_width, cap_height)
+        pygame.draw.rect(screen, (0, 150, 0), top_cap)
+        pygame.draw.rect(screen, BLACK, top_cap, 2)
+        bottom_cap = (self.x - 5 + offset_x, self.gap_y + PIPE_GAP, cap_width, cap_height)
+        pygame.draw.rect(screen, (0, 150, 0), bottom_cap)
+        pygame.draw.rect(screen, BLACK, bottom_cap, 2)
+    
     def collides_with_bird(self, bird):
         bird_rect = bird.get_rect()
         top_pipe_rect = pygame.Rect(self.x, 0, PIPE_WIDTH, self.gap_y)
@@ -66,7 +87,8 @@ class Pipe:
         return bird_rect.colliderect(top_pipe_rect) or bird_rect.colliderect(bottom_pipe_rect)
     
     def is_passed(self, bird):
-        return self.x + PIPE_WIDTH < bird.x
+        # Ptak dostaje punkt gdy przejdzie środek rury (x rury + połowa szerokości)
+        return self.x + PIPE_WIDTH // 2 < bird.x
 
 class Game:
     def __init__(self):
@@ -85,7 +107,7 @@ class Game:
         self.game_over = False
         self.game_started = False
         for i in range(3):
-            self.pipes.append(Pipe(SCREEN_WIDTH + i * 300))
+            self.pipes.append(Pipe(SCREEN_WIDTH + i * 400))
     
     def handle_events(self):
         for event in pygame.event.get():
@@ -126,7 +148,7 @@ class Game:
 
         if len(self.pipes) < 3:
             last_pipe_x = max(pipe.x for pipe in self.pipes)
-            self.pipes.append(Pipe(last_pipe_x + 300))
+            self.pipes.append(Pipe(last_pipe_x + 400))
     
     def draw_gradient_background(self):
         for y in range(SCREEN_HEIGHT):
@@ -181,11 +203,27 @@ class Game:
             self.draw()
             self.clock.tick(60)
 
-def simulate_bird_players(screen, bird_players, clock, generation):
+def simulate_bird_players(screen, bird_players, clock, generation, best_player=None, current_seed=None, best_seed=None):
     running = True
+    
+    # Create separate random generators for each pipe set
+    current_rng = random.Random(current_seed) if current_seed is not None else random.Random()
+    best_rng = random.Random(best_seed) if best_seed is not None else random.Random()
+    
+    # Generate pipes for current generation
     pipes = []
     for i in range(3):
-        pipes.append(Pipe(SCREEN_WIDTH + i * 300))
+        x = SCREEN_WIDTH + i * 400
+        gap_y = current_rng.randint(150, SCREEN_HEIGHT - 250)
+        pipes.append(Pipe(x, gap_y))
+    
+    # Generate pipes for best_player
+    best_pipes = []
+    if best_player is not None and best_seed is not None:
+        for i in range(3):
+            x = SCREEN_WIDTH + i * 400
+            gap_y = best_rng.randint(150, SCREEN_HEIGHT - 250)
+            best_pipes.append(Pipe(x, gap_y))
     
     while running:
         for event in pygame.event.get():
@@ -199,33 +237,86 @@ def simulate_bird_players(screen, bird_players, clock, generation):
         if all_dead:
             print("Simulation finished")
             return False
+        
+        # Update pipes for current generation
         for pipe in pipes[:]:
             pipe.update()
             for bird in bird_players:
                 if bird.is_alive:
                     if pipe.collides_with_bird(bird):
                         bird.is_alive = False
-                    if not pipe.passed and pipe.is_passed(bird):
-                        pipe.passed = True
+                    if pipe.pipe_id not in bird.passed_pipes and pipe.is_passed(bird):
+                        bird.passed_pipes.add(pipe.pipe_id)
                         bird.score += 1
             if pipe.x + PIPE_WIDTH < 0:
                 pipes.remove(pipe)
+        
         if len(pipes) < 3:
             last_pipe_x = max(pipe.x for pipe in pipes)
-            pipes.append(Pipe(last_pipe_x + 300))
+            x = last_pipe_x + 400
+            gap_y = current_rng.randint(150, SCREEN_HEIGHT - 250)
+            pipes.append(Pipe(x, gap_y))
+        
+        # Update pipes for best_player (separate pipes with best_seed)
+        if best_player is not None and best_pipes:
+            for pipe in best_pipes[:]:
+                pipe.update()
+                if best_player.is_alive:
+                    if pipe.collides_with_bird(best_player):
+                        best_player.is_alive = False
+                    if pipe.pipe_id not in best_player.passed_pipes and pipe.is_passed(best_player):
+                        best_player.passed_pipes.add(pipe.pipe_id)
+                        best_player.score += 1
+                if pipe.x + PIPE_WIDTH < 0:
+                    best_pipes.remove(pipe)
+            
+            if len(best_pipes) < 3:
+                last_pipe_x = max(pipe.x for pipe in best_pipes)
+                x = last_pipe_x + 400
+                gap_y = best_rng.randint(150, SCREEN_HEIGHT - 250)
+                best_pipes.append(Pipe(x, gap_y))
         for bird in bird_players:
             if bird.is_alive:
                 bird.update(pipes)
+        
+        # Update best player (uses best_pipes from its generation)
+        if best_player is not None and best_pipes:
+            best_player.update(best_pipes)
+        
         for y in range(SCREEN_HEIGHT):
             color_ratio = y / SCREEN_HEIGHT
             r = int(135 + (255 - 135) * color_ratio)
             g = int(206 + (255 - 206) * color_ratio)
             b = int(235 + (255 - 235) * color_ratio)
             pygame.draw.line(screen, (r, g, b), (0, y), (SCREEN_WIDTH, y))
+            # Draw for right screen
+            if best_player is not None:
+                pygame.draw.line(screen, (r, g, b), (SCREEN_WIDTH, y), (SCREEN_WIDTH * 2, y))
+        
+        # Draw pipes for left screen
+        screen.set_clip(pygame.Rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT))
         for pipe in pipes:
             pipe.draw(screen)
+        
+        # Draw birds for left screen
         for bird in bird_players:
             bird.draw(screen)
+        screen.set_clip(None)
+        
+        # Draw second screen for best player
+        if best_player is not None and best_pipes:
+            # Clip to right screen only
+            screen.set_clip(pygame.Rect(SCREEN_WIDTH, 0, SCREEN_WIDTH, SCREEN_HEIGHT))
+            # Draw pipes from best_player's generation
+            for pipe in best_pipes:
+                pipe.draw_copy(screen, offset_x=SCREEN_WIDTH)
+            
+            # Draw best player
+            best_player.draw_copy(screen, offset_x=SCREEN_WIDTH)
+            screen.set_clip(None)
+        
+        # Draw vertical line separator
+        pygame.draw.line(screen, BLACK, (SCREEN_WIDTH, 0), (SCREEN_WIDTH, SCREEN_HEIGHT), 3)
 
         font = pygame.font.Font(None, 30)
         alive_count = sum(1 for bird in bird_players if bird.is_alive)
@@ -233,13 +324,9 @@ def simulate_bird_players(screen, bird_players, clock, generation):
         screen.blit(text, (10, SCREEN_HEIGHT - 50))
         text = font.render(f"Generation: {generation}", True, BLACK)
         screen.blit(text, (10, SCREEN_HEIGHT - 30))
-        if bird_players:
-            best_score = max(bird.score for bird in bird_players)
-            text = font.render(f"Best score: {best_score}", True, BLACK)
-            screen.blit(text, (10, 10))
         
         pygame.display.flip()
-        clock.tick(60)
+        clock.tick(SIM_SPEED)
     
     return False
 

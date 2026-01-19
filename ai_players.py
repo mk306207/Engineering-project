@@ -75,6 +75,7 @@ class Bird_player():
         self.fitness = 0
         self.frames_alive = 0
         self.distance_traveled = 0
+        self.passed_pipes = set()  # Zbiór ID rur przez które ptak przeszedł
     
     def decide(self, pipes):
         if not pipes:
@@ -126,6 +127,18 @@ class Bird_player():
             pygame.draw.polygon(screen, (255, 165, 0), beak_points)
             if hasattr(self, 'is_elite') and self.is_elite:
                 pygame.draw.circle(screen, (255, 215, 0), (int(self.x), int(self.y)), self.radius + 5, 3)
+    
+    def draw_copy(self, screen, offset_x=0):
+        if self.is_alive:
+            rect = pygame.Rect(self.x - 25 + offset_x, self.y - 15, 50, 30)
+            pygame.draw.ellipse(screen, self.color, rect)
+            pygame.draw.circle(screen, BLACK, (int(self.x + 8 + offset_x), int(self.y - 5)), 3)
+            beak_points = [
+                (self.x + 20 + offset_x, self.y),
+                (self.x + 30 + offset_x, self.y + 3),
+                (self.x + 20 + offset_x, self.y + 6)
+            ]
+            pygame.draw.polygon(screen, (255, 165, 0), beak_points)
     
     def get_rect(self):
         return pygame.Rect(self.x - self.radius, self.y - self.radius, self.radius * 2, self.radius * 2)

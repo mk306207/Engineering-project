@@ -40,14 +40,14 @@ class genetic_algorithm:
             distance = abs(player.x - finish_line[0]) + abs(player.y - finish_line[1])
             fitness_score = 1000 - distance
             if (player.x, player.y) == finish_line:
-                fitness_score = 10000 - player.moves 
+                fitness_score = 2000 - player.moves 
             wasted_moves = player.moves - player.successful_moves
             fitness_score -= wasted_moves * 5
             return max(0, fitness_score)
         
         elif self.game == 'Bird':
             fitness_score = 0
-            fitness_score += player.frames_alive
+            #fitness_score += player.frames_alive
             fitness_score += player.score * 1000
             fitness_score += player.distance_traveled * 0.1 
             return max(0, fitness_score)
@@ -77,7 +77,7 @@ class genetic_algorithm:
         elif self.game == "Bird":
             for i in range(len(mutated)):
                 if random.random() < mutation_rate:
-                    mutated[i] += random.uniform(-0.5, 0.5)
+                    mutated[i] += random.uniform(-1.0, 1.0)
                     mutations_count += 1
         
         return mutated
@@ -90,11 +90,13 @@ class genetic_algorithm:
     def evolve(self, players, elite_count=2):
         self.kids.clear()
         self.elite_genomes = []
+        self.elite_genome_ids = []
         
         for i in range(elite_count):
             #print(f"{players[i].fitness}")
             self.live_longer(players[i].genom) #players are sorted, so they are for sure here in the first and second slot
             self.elite_genomes.append(players[i].genom)
+            self.elite_genome_ids.append(id(players[i].genom))
 
         while len(self.kids) < self.population_size:
             parent1 = self.select_parent(players)
