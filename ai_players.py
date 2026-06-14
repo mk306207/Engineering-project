@@ -1,5 +1,5 @@
-from maze_config import *
-from bird_config import *
+import maze_config
+import bird_config
 from colors import BLACK
 import pygame
 
@@ -15,7 +15,7 @@ class Maze_player():
         self.unsuccessful_moves = 0
         self.is_alive = True
         self.color = color
-        self.radius = TILE_SIZE // 4
+        self.radius = maze_config.TILE_SIZE // 4
         self.fitness = 0
 
     def move_mp(self, maze):
@@ -42,16 +42,16 @@ class Maze_player():
 
     def draw(self,screen):
         if self.is_alive:
-            center_x = self.x * TILE_SIZE + TILE_SIZE // 2
-            center_y = self.y * TILE_SIZE + TILE_SIZE // 2
+            center_x = self.x * maze_config.TILE_SIZE + maze_config.TILE_SIZE // 2
+            center_y = self.y * maze_config.TILE_SIZE + maze_config.TILE_SIZE // 2
             pygame.draw.circle(screen, self.color, (center_x, center_y), self.radius)
             if hasattr(self, 'is_elite') and self.is_elite:
                 pygame.draw.circle(screen, (255, 215, 0), (center_x, center_y), self.radius + 2, 2)
 
     def draw_copy(self, screen, offset_x=0):
         if self.is_alive:
-            center_x = self.x * TILE_SIZE + TILE_SIZE // 2 + offset_x
-            center_y = self.y * TILE_SIZE + TILE_SIZE // 2
+            center_x = self.x * maze_config.TILE_SIZE + maze_config.TILE_SIZE // 2 + offset_x
+            center_y = self.y * maze_config.TILE_SIZE + maze_config.TILE_SIZE // 2
             pygame.draw.circle(screen, self.color, (center_x, center_y), self.radius)
             if hasattr(self, 'is_elite') and self.is_elite:
                 pygame.draw.circle(screen, (255, 215, 0), (center_x, center_y), self.radius + 2, 2)
@@ -65,7 +65,7 @@ class Maze_player():
 class Bird_player():
     def __init__(self, genom, color):
         self.x = 100
-        self.y = SCREEN_HEIGHT // 2
+        self.y = bird_config.SCREEN_HEIGHT // 2
         self.score = 0
         self.is_alive = True
         self.color = color
@@ -83,14 +83,14 @@ class Bird_player():
 
         nearest_pipe = None
         for pipe in pipes:
-            if pipe.x + PIPE_WIDTH > self.x:
+            if pipe.x + bird_config.PIPE_WIDTH > self.x:
                 nearest_pipe = pipe
                 break
         if nearest_pipe is None:
             return False
         
-        y_diff = (self.y - nearest_pipe.gap_y) / SCREEN_HEIGHT
-        x_diff = (nearest_pipe.x - self.x) / SCREEN_WIDTH
+        y_diff = (self.y - nearest_pipe.gap_y) / bird_config.SCREEN_HEIGHT
+        x_diff = (nearest_pipe.x - self.x) / bird_config.SCREEN_WIDTH
         velocity_normalized = self.velocity / 20.0   
         w_y = self.genom[0]
         w_x = self.genom[1]
@@ -100,18 +100,18 @@ class Bird_player():
         return activation > 0
     
     def jump(self):
-        self.velocity = JUMP_FORCE
+        self.velocity = bird_config.JUMP_FORCE
     
     def update(self, pipes):
         if not self.is_alive:
             return
         if self.decide(pipes):
             self.jump()
-        self.velocity += GRAVITY
+        self.velocity += bird_config.GRAVITY
         self.y += self.velocity
         self.frames_alive += 1
-        self.distance_traveled += PIPE_SPEED
-        if self.y + self.radius >= SCREEN_HEIGHT or self.y - self.radius <= 0:
+        self.distance_traveled += bird_config.PIPE_SPEED
+        if self.y + self.radius >= bird_config.SCREEN_HEIGHT or self.y - self.radius <= 0:
             self.is_alive = False
     
     def draw(self, screen):

@@ -1,7 +1,7 @@
 import pygame
 import sys
 from colors import *
-from maze_config import *
+import maze_config
 
 pygame.init()
 
@@ -9,7 +9,7 @@ class Player:
     def __init__(self, x, y):
         self.x = x
         self.y = y
-        self.radius = TILE_SIZE // 3
+        self.radius = maze_config.TILE_SIZE // 3
         
     def move(self, dx, dy, maze):
         new_x = self.x + dx
@@ -21,8 +21,8 @@ class Player:
         return False
     
     def draw(self, screen):
-        center_x = self.x * TILE_SIZE + TILE_SIZE // 2
-        center_y = self.y * TILE_SIZE + TILE_SIZE // 2
+        center_x = self.x * maze_config.TILE_SIZE + maze_config.TILE_SIZE // 2
+        center_y = self.y * maze_config.TILE_SIZE + maze_config.TILE_SIZE // 2
         pygame.draw.circle(screen, BLUE, (center_x, center_y), self.radius)
 
     def get_position(self):
@@ -30,7 +30,7 @@ class Player:
 
 class Maze:
     def __init__(self):
-        self.grid = [row[:] for row in MAZE]
+        self.grid = [row[:] for row in maze_config.MAZE]
         self.width = len(self.grid[0])
         self.height = len(self.grid)
         
@@ -42,7 +42,7 @@ class Maze:
     def draw(self, screen):
         for y in range(self.height):
             for x in range(self.width):
-                rect = pygame.Rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE)
+                rect = pygame.Rect(x * maze_config.TILE_SIZE, y * maze_config.TILE_SIZE, maze_config.TILE_SIZE, maze_config.TILE_SIZE)
                 if self.grid[y][x] == 1:
                     pygame.draw.rect(screen, DARK_GRAY, rect)
                     pygame.draw.rect(screen, GRAY, rect, 2)
@@ -52,7 +52,7 @@ class Maze:
     def draw_copy(self, screen, offset_x=0):
         for y in range(self.height):
             for x in range(self.width):
-                rect = pygame.Rect(x * TILE_SIZE + offset_x, y * TILE_SIZE, TILE_SIZE, TILE_SIZE)
+                rect = pygame.Rect(x * maze_config.TILE_SIZE + offset_x, y * maze_config.TILE_SIZE, maze_config.TILE_SIZE, maze_config.TILE_SIZE)
                 if self.grid[y][x] == 1:
                     pygame.draw.rect(screen, DARK_GRAY, rect)
                     pygame.draw.rect(screen, GRAY, rect, 2)
@@ -62,19 +62,19 @@ class Maze:
 
 class Game:
     def __init__(self):
-        self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+        self.screen = pygame.display.set_mode((maze_config.SCREEN_WIDTH, maze_config.SCREEN_HEIGHT))
         pygame.display.set_caption("Game2")
         self.clock = pygame.time.Clock()
         self.maze = Maze()
         self.running = True
-        self.player = Player(START_POSITION[0],START_POSITION[1])
+        self.player = Player(maze_config.START_POSITION[0],maze_config.START_POSITION[1])
         self.score = 0
         self.font = pygame.font.Font(None, 48)
         self.small_font = pygame.font.Font(None, 32)
         self.game_over = False
 
     def restart(self):
-        self.player = Player(START_POSITION[0],START_POSITION[1])
+        self.player = Player(maze_config.START_POSITION[0],maze_config.START_POSITION[1])
         self.score = 0
         self.game_over = False
 
@@ -115,7 +115,7 @@ class Game:
     
     def update(self):
         #print(self.player.get_position())
-        if self.player.get_position() == FINISH_LINE:
+        if self.player.get_position() == maze_config.FINISH_LINE:
             self.running = False
     
     def draw(self):
@@ -123,9 +123,9 @@ class Game:
         self.maze.draw(self.screen)
         self.player.draw(self.screen)
         score_text = self.font.render(f"Score: {self.score}", True, BLACK)
-        self.screen.blit(score_text, (0, 625))
+        self.screen.blit(score_text, (0, maze_config.SCREEN_HEIGHT - 55))
         if self.game_over:
-            overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+            overlay = pygame.Surface((maze_config.SCREEN_WIDTH, maze_config.SCREEN_HEIGHT))
             overlay.set_alpha(128)
             overlay.fill((0, 0, 0))
             self.screen.blit(overlay, (0, 0))
@@ -134,9 +134,9 @@ class Game:
             final_score = self.small_font.render(f"Score: {self.score}", True, WHITE)
             restart_text = self.small_font.render("SPACE - restart, ESC - exit", True, WHITE)
             
-            self.screen.blit(game_over_text, (SCREEN_WIDTH//2 - game_over_text.get_width()//2, SCREEN_HEIGHT//2 - 80))
-            self.screen.blit(final_score, (SCREEN_WIDTH//2 - final_score.get_width()//2, SCREEN_HEIGHT//2 - 30))
-            self.screen.blit(restart_text, (SCREEN_WIDTH//2 - restart_text.get_width()//2, SCREEN_HEIGHT//2 + 50))
+            self.screen.blit(game_over_text, (maze_config.SCREEN_WIDTH//2 - game_over_text.get_width()//2, maze_config.SCREEN_HEIGHT//2 - 80))
+            self.screen.blit(final_score, (maze_config.SCREEN_WIDTH//2 - final_score.get_width()//2, maze_config.SCREEN_HEIGHT//2 - 30))
+            self.screen.blit(restart_text, (maze_config.SCREEN_WIDTH//2 - restart_text.get_width()//2, maze_config.SCREEN_HEIGHT//2 + 50))
         pygame.display.flip()
     
     def run(self):
@@ -165,34 +165,34 @@ def simulate_maze_players(screen, maze, maze_players, clock, generation,best_pla
         for maze_player in maze_players:
             if maze_player.is_alive:
                 maze_player.move_mp(maze)
-                if maze_player.get_position() == FINISH_LINE:
+                if maze_player.get_position() == maze_config.FINISH_LINE:
                     maze_player.is_alive = False
 
         if best_player is not None:
             if best_player.is_alive:
                 best_player.move_mp(winner_maze)
                 #print(best_player.get_position())
-                if best_player.get_position() == WINNER_FINISH_LINE:
+                if best_player.get_position() == maze_config.WINNER_FINISH_LINE:
                     best_player.is_alive = False
         
         
         screen.fill(BLACK)
         maze.draw(screen)
-        winner_maze.draw_copy(screen, offset_x=SCREEN_WIDTH)      
+        winner_maze.draw_copy(screen, offset_x=maze_config.SCREEN_WIDTH)      
         for maze_player in maze_players:
             maze_player.draw(screen)
         
         if best_player is not None:
-            best_player.draw_copy(screen, offset_x=SCREEN_WIDTH)
+            best_player.draw_copy(screen, offset_x=maze_config.SCREEN_WIDTH)
         
         font = pygame.font.Font(None, 30)
         alive_count = sum(1 for maze_player in maze_players if maze_player.is_alive)
         text = font.render(f"Alive: {alive_count}/{len(maze_players)}", True, WHITE)
-        screen.blit(text, (10, SCREEN_HEIGHT - 50)) 
+        screen.blit(text, (10, maze_config.SCREEN_HEIGHT - 50)) 
         text = font.render(f"Generation: {generation}", True, WHITE)
-        screen.blit(text, (10, SCREEN_HEIGHT - 30)) 
+        screen.blit(text, (10, maze_config.SCREEN_HEIGHT - 30)) 
         pygame.display.flip()
-        clock.tick(SIM_SPEED)
+        clock.tick(maze_config.SIM_SPEED)
 
 if __name__ == "__main__":
     game = Game()

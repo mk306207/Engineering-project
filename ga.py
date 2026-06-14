@@ -1,7 +1,7 @@
 import random
 
 class genetic_algorithm:
-    def __init__(self,game):
+    def __init__(self,game, settings=None):
         if game=="Bird" or game=="Maze":
             self.game = game
         else:
@@ -9,13 +9,16 @@ class genetic_algorithm:
         self.population = []
         self.kids = []
         self.generation = 0
-        self.population_size = 50
+        self.settings = settings or {}
+        self.population_size = self.settings.get("population_size", 50)
+        self.mutation_rate = self.settings.get("mutation_rate", 0.05)
+        self.chromosome_length = self.settings.get("chromosome_length", 200)
         
     def create_population(self):
         if self.game == "Maze":
             for chromosome in range(0,self.population_size):
                 genom = []
-                for i in range(0,200):
+                for i in range(0,self.chromosome_length):
                     move = random.randint(1, 4)
                     genom.append(move)
                 self.population.append(genom)
@@ -64,7 +67,9 @@ class genetic_algorithm:
         kid = parent1[:point1] + parent2[point1:point2] + parent1[point2:]
         return kid
 
-    def mutate(self, chromosome, mutation_rate=0.05):
+    def mutate(self, chromosome, mutation_rate=None):
+        if mutation_rate is None:
+            mutation_rate = self.mutation_rate
         mutated = chromosome.copy()
         mutations_count = 0
         
