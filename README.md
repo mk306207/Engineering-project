@@ -1,5 +1,10 @@
-# 2026 Engineering project - visualization of genetic algorithm  
-As my final step in my Engineering studies, this project focuses on implementing and visualizing a genetic algorithm, showing how populations evolve to find optimal or near-optimal solutions to complex problems. To make the concept more intuitive and engaging, I decided to visualize it using a simple arcade-style game, where each individual in the population is represented as a player attempting to reach a goal through evolutionary processes.  
+# SymK branch
+This branch contains project required for SymK. It mainly focuses on improving Maze game and its simulation. This update contains new UI for changing crucial parameters for Maze game/simulation such as:
+ - Maze board,
+ - Mutation probability,
+ - Expected fitness,
+ - Population size,
+ - Chromosome length.
 
 # Virtual enviroment setup  
 
